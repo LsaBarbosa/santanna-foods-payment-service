@@ -1,4 +1,4 @@
-## 💻 Sobre o projeto 💻
+## 💻 About project 💻
 Payment-Api is a service from the SantAnna Foods application
 ## ⚙️ Functionalities ⚙️
 - [x] Payment CRUD;
