@@ -2,6 +2,7 @@ package com.santanna.payment.controller;
 
 import com.santanna.payment.dto.RequestPaymentDTO;
 import com.santanna.payment.dto.ResponsePaymentDTO;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,8 @@ public class PaymentController {
     @Autowired
     private PaymentService service;
     @GetMapping
-    public ResponseEntity<Page<RequestPaymentDTO>> listAllPayment(@PageableDefault(size = 10) Pageable paginacao) {
-         service.getAllpayments(paginacao);
+    public ResponseEntity<Page<RequestPaymentDTO>> listAllPayment(@PageableDefault(size = 10) Pageable page) {
+         service.getAllpayments(page);
         return ResponseEntity.ok().build();
     }
     @GetMapping("/{id}")
@@ -43,8 +44,8 @@ public class PaymentController {
 
     @PutMapping
     public ResponseEntity<ResponsePaymentDTO> updatePayment(@PathVariable @NotNull Long id, @RequestBody @Valid RequestPaymentDTO dto) {
-        ResponsePaymentDTO atualizado = service.updatePaymentData(id, dto);
-        return ResponseEntity.ok(atualizado);
+        ResponsePaymentDTO updated = service.updatePaymentData(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
@@ -53,5 +54,10 @@ public class PaymentController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/confirm")
+    @CircuitBreaker(name = "update order", fallbackMethod = "")
+    public void confirmPayment(@PathVariable Long id){
+        service.confirmPayment(id);
+    }
 }
 

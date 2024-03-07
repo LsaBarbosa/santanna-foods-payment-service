@@ -3,6 +3,7 @@ package com.santanna.payment.service;
 import com.santanna.payment.dto.RequestPaymentDTO;
 import com.santanna.payment.dto.ResponsePaymentDTO;
 import com.santanna.payment.enums.Status;
+import com.santanna.payment.http_client.OrderClient;
 import com.santanna.payment.model.Payment;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
@@ -13,10 +14,14 @@ import org.springframework.stereotype.Service;
 
 import com.santanna.payment.repository.PaymentRepository;
 
+import java.util.Optional;
+
 @Service
 public class PaymentService {
     @Autowired
     private PaymentRepository repository;
+    @Autowired
+    private OrderClient order;
     @Autowired
     private ModelMapper modelMapper;
     public Page<RequestPaymentDTO> getAllpayments(Pageable page) {
@@ -47,5 +52,20 @@ public class PaymentService {
     }
     public void deletePayment(Long id) {
         repository.deleteById(id);
+    }
+
+    public void confirmPayment(Long id){
+        Optional<Payment> payment = repository.findById(id);
+        payment.get().setStatus(Status.CONFIRMED);
+        repository.save(payment.get());
+        order.updatePayment(payment.get().getOrderId());
+    }
+    public  void changeStatus(Long id) {
+        Optional<Payment> payment = repository.findById(id);
+        if (!payment.isPresent()) {
+            throw new EntityNotFoundException();
+        }
+        payment.get().setStatus(Status.CONFIRMED_WITHOUT_INTEGRATION);
+        repository.save(payment.get());
     }
 }
